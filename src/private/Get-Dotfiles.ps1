@@ -1,10 +1,10 @@
-Function Get-Config {
-  Import-Module $PSScriptRoot/Find-Config.ps1
+Function Get-Dotfiles {
+  Import-Module $PSScriptRoot/Find-Dotfiles.ps1
   Import-Module powershell-yaml
   Import-Module Poshstache
-  
+
   $cfg = @{}
-  $cfgDirectory = Find-Config
+  $cfgDirectory = Find-Dotfiles
 
   Get-ChildItem $cfgDirectory -Directory | ForEach-Object {
     $currentName = $currentDirectory
