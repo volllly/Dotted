@@ -16,7 +16,7 @@ Function Mount-Dotfiles {
   [CmdletBinding()]
   Param(
     [Parameter(Mandatory=$True,ValueFromPipelineByPropertyName=$True,Position=0)]
-    [ValidateSet("Install", "Update", "Link", "Sync", "Setup", "Help")]
+    [ValidateSet("Install", "Update", "Link", "Sync", "Help")]
     $Command = "Help",
     [Switch]$NoUpdate = $False,
     [Switch]$NoLink = $False,
@@ -28,21 +28,86 @@ Function Mount-Dotfiles {
     [Parameter(Mandatory=$True,ValueFromRemainingArguments=$True)]
     [String[]] $Dotfiles
   )
-
+  
+  Import-Module powershell-yaml
+  Import-Module PsTokens
+  
   $cfg = @{}
-
+  $cfgDefault = @{}
+  
+  $cfgfile = ''
+  $currentFile = $(Join-Path -Path $PSScriptRoot -ChildPath "dots.yaml")
+  
+  If(!(Test-Path $currentFile)) {
+    Return
+  }
+  
+  foreach ($line In Get-Content $currentFile) { $cfgfile += "`n" + $line }
+  $cfgDefault = ConvertFrom-YAML $cfgfile
+  If($cfgDefault["installs"]) {
+    If($cfgDefault["installs"].GetType().Name -Eq "String") {
+      $cfgDefault = @{ "cmd" = $cfgDefault["installs"]}
+    }
+    If($cfgDefault["installs"]["depends"]) {
+      If($cfgDefault["installs"]["depends"].GetType().Name -Eq "String") {
+        $cfgDefault["installs"]["depends"] = @($cfgDefault["installs"]["depends"])
+      }
+    }
+    $cfgDefault["installs"]["installed"] = $False
+  }
+  If($cfgDefault["links"]) {
+    If($cfgDefault["links"].GetType().Name -Eq "String") {
+      $cfgDefault["links"] = @($cfgDefault["links"])
+      $cfgDefault["links"].Keys | ForEach-Object {
+        If($cfgDefault["links"][$_].GetType().Name -Eq "String") {
+          $cfgDefault["links"][$_] = @($cfgDefault["links"][$_])
+        }
+      }
+    }
+  }
+  
   Get-ChildItem $PSScriptRoot -Directory | ForEach-Object {
     $currentDirectory = $_
     $currentName = Split-Path $currentDirectory -Leaf
     $cfgfile = ''
     $currentFile = $(Join-Path -Path $currentDirectory -ChildPath "dot.yaml")
-
+  
     If(!(Test-Path $currentFile)) {
       Return
     }
     
     foreach ($line In Get-Content $currentFile) { $cfgfile += "`n" + $line }
+  
+  
     $cfg[$currentName] = ConvertFrom-YAML $cfgfile
+  
+    If(!($cfg[$currentName])) {
+      $cfg[$currentName] = @{}
+    }
+  
+  
+    If(!($cfg[$currentName]["installs"])) {
+      $cfg[$currentName]["installs"] = $cfgDefault["installs"].Clone()
+      $cfg[$currentName]["installs"]["cmd"] = $cfg[$currentName]["installs"]["cmd"] | Merge-Tokens -Tokens @{
+        name = $currentName
+      }
+    }
+  
+    If(!($cfg[$currentName]["updates"])) {
+      $cfg[$currentName]["updates"] = $cfgDefault["updates"].Clone()
+      $cfg[$currentName]["updates"]["cmd"] = $cfg[$currentName]["updates"]["cmd"] | Merge-Tokens -Tokens @{
+        name = $currentName
+      }
+    }
+    
+    If(!($cfg[$currentName]["links"])) {
+      $cfg[$currentName]["links"] = $cfgDefault["links"]
+    }
+  
+    If(!($cfg[$currentName]["depends"])) {
+      $cfg[$currentName]["depends"] = $cfgDefault["depends"]
+    }
+  
     If($cfg[$currentName]["installs"]) {
       If($cfg[$currentName]["installs"].GetType().Name -Eq "String") {
         $cfg[$currentName]["installs"] = @{ "cmd" = $cfg[$currentName]["installs"]}
@@ -57,25 +122,29 @@ Function Mount-Dotfiles {
     If($cfg[$currentName]["links"]) {
       If($cfg[$currentName]["links"].GetType().Name -Eq "String") {
         $cfg[$currentName]["links"] = @($cfg[$currentName]["links"])
-          
+        $cfg[$currentName]["links"].Keys | ForEach-Object {
+          If($cfg[$currentName]["links"][$_].GetType().Name -Eq "String") {
+            $cfg[$currentName]["links"][$_] = @($cfg[$currentName]["links"][$_])
+          }
+        }
       }
     }
   }
-
+  
   If($Pull) {
     Write-Host "Pulling from git remote"
     Invoke-Expression "git pull"
     Write-Host ""
   }
-
+  
   Function Installs($name) {
     $installs = $cfg[$name]["installs"]
     $depends = $cfg[$name]["depends"]
-
+  
     If(($installs["installed"]) -Or ($installs["error"])) {
       Return
     }
-
+  
     If(($installs["depended"] -Gt 1) -Or ($cfg[$name]["depended"] -Gt 1)) {
       Write-Host "detected circular dependency for $name" -ForegroundColor Red
       Return
@@ -86,23 +155,23 @@ Function Mount-Dotfiles {
       Installs $_
       }
     }
-
+  
     Write-Host "installing $name"
-
+  
     Invoke-Expression $installs["cmd"]
-
+  
     $cfg[$name]["installs"]["installed"] = $True
-
+  
     If($depends) {
       $depends | ForEach-Object {
         $cfg[$_]["depended"] += 1
         Installs $_
       }
     }
-
+  
     Write-Host ""
   }
-
+  
   Function Links($name) {
     Write-Host "linking $name"
     $links = $cfg[$name]["links"]
@@ -115,23 +184,23 @@ Function Mount-Dotfiles {
     }
     Write-Host ""
   }
-
+  
   Function Upadtes($name) {
     Write-Host "linking $name"
     $updates = $cfg[$name]["updates"]
-
+  
     Invoke-Expression $updates
-
+  
     Write-Host ""
   }
-
+  
   Function Syncs($path) {
     $changes = @{}
-
+  
     Invoke-Expression "git add $path/* -v" | ForEach-Object {
       $changes[$_.Split(" ")[1].Trim("'").Split("/")[0]] = $True
     }
-
+  
     If($changes.Count -Ne 0) {
       $message = ""
       $changes.Keys | ForEach-Object {
@@ -139,15 +208,15 @@ Function Mount-Dotfiles {
       }
       Invoke-Expression "git commit -m `"$message`""
     }
-
+  
     Invoke-Expression "git pull"
     Invoke-Expression "git push"
   }
-
+  
   Function Help() {
     Write-Error "not implemented"
   }
-
+  
   Switch($Command) {
     "Sync" {
       Syncs $Dotfiles

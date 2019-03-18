@@ -2,7 +2,7 @@
   ModuleVersion = "0.0.0"
   RequiredModules = @(
     "powershell-yaml",
-    "Poshstache"
+    "PsTokens"
   )
   NestedModules = @(
     "./src/public/Mount-Dotfiles.ps1"
