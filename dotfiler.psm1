@@ -27,6 +27,8 @@ function dotfiler() {
   Import-Module powershell-yaml
   Import-Module PsTokens
 
+  Write-Host $Dotfiles
+
   $config = @{ }
   $configPath = "~/.config/dotfiler/config.y*ml"
   if(Test-Path $configPath) {
@@ -349,7 +351,7 @@ function Syncs($dotfiles, $path) {
   }
 
   $dotfiles.Split(" ") | ForEach-Object {
-    Invoke-Expression "git -C $(Resolve-Path $path) add $_/* -v" | ForEach-Object {
+    Invoke-Expression "git -C $(Resolve-Path $path) add `"$_/*`" -v" | ForEach-Object {
       $changes[$_.Split(" ")[1].Trim("'").Split("/")[0]] = $true
     }
   }
