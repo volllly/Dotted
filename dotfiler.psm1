@@ -14,7 +14,7 @@ function dotfiler() {
     [Switch]$Pull = $false,
 
     [Parameter(ValueFromPipelineByPropertyName = $true)]
-    $Path = $PWD,
+    $Path = $false,
 
     [Parameter(ValueFromPipelineByPropertyName = $true)]
     [ValidateSet("SymbolicLink", "HardLink")]
@@ -26,6 +26,22 @@ function dotfiler() {
 
   Import-Module powershell-yaml
   Import-Module PsTokens
+
+  $config = @{ }
+  $configPath = "~/.config/dotfiler/config.y*ml"
+  if(Test-Path $configPath) {
+    $rawConfig = ""
+    foreach ($line in Get-Content $(Resolve-Path $configPath)) { $rawConfig += "`n" + $line }
+    $config = ConvertFrom-Yaml $rawConfig
+  } 
+
+  if(!$Path) {
+    if($config["path"]) {
+      $Path = $config["path"]
+    } else {
+      $Path = "~/.dotfiles"
+    }
+  }
 
   $os = $false
   if($PSVersionTable.OS) {
