@@ -88,10 +88,13 @@ function dotfiler() {
 
     if($null -eq $dots[$currentName]) { $dots[$currentName] = @{ } }
 
-    $dots[$currentName] = Merge $dotsDefault $dots[$currentName].Clone()
+    if($dots[$currentName]) {
+      $dots[$currentName] = Merge $dotsDefault $dots[$currentName].Clone()
+    }
 
     if(!($dots[$currentName])) {
       $dots.Remove($currentName)
+      return
     }
 
     if($dots[$currentName]["installs"]) {
@@ -108,15 +111,15 @@ function dotfiler() {
   }
 
 
-  if($Pull) {
+  if($Pull -and ($Command -ne "Sync")) {
     Write-Host "Pulling from git remote"
-    Invoke-Expression "git pull"
+    Invoke-Expression "git -C $(Resolve-Path $path) pull"
     Write-Host ""
   }
 
   switch($Command) {
     "Sync" {
-      Syncs $Dotfiles
+      Syncs $Dotfiles $Path
     }
     default {
       $dots.Keys | ForEach-Object {
@@ -314,11 +317,19 @@ Function Installs($dots, $name) {
   PackageAction $dots $name "installs"
 }
 
-function Syncs($path) {
+function Syncs($dotfiles, $path) {
   $changes = @{ }
 
-  Invoke-Expression "git add $path/* -v" | ForEach-Object {
-    $changes[$_.Split(" ")[1].Trim("'").Split("/")[0]] = $true
+  if($Dotfiles.Contains("*") -Or $Dotfiles.Contains("dots.yaml")) {
+    Invoke-Expression "git -C $(Resolve-Path $path) add dots.yaml -v" | ForEach-Object {
+      $changes[$_.Split(" ")[1].Trim("'").Split("/")[0]] = $true
+    }
+  }
+
+  $dotfiles.Split(" ") | ForEach-Object {
+    Invoke-Expression "git -C $(Resolve-Path $path) add $_/* -v" | ForEach-Object {
+      $changes[$_.Split(" ")[1].Trim("'").Split("/")[0]] = $true
+    }
   }
 
   if($changes.Count -Ne 0) {
@@ -326,11 +337,11 @@ function Syncs($path) {
     $changes.Keys | ForEach-Object {
       $message += "update $_. "
     }
-    Invoke-Expression "git commit -m `"$message`""
+    Invoke-Expression "git -C $(Resolve-Path $path) commit -m `"$message`""
   }
 
-  Invoke-Expression "git pull"
-  Invoke-Expression "git push"
+  Invoke-Expression "git -C $(Resolve-Path $path) pull"
+  Invoke-Expression "git -C $(Resolve-Path $path) push"
 }
 
 Function Links($dots, $name) {
