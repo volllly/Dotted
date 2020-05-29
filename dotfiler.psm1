@@ -64,7 +64,7 @@ function dotfiler() {
   $dotsDefault = @{ }
 
   $rawDot = ""
-  $currentFile = $(Join-Path -Path $Path -ChildPath "dots.yaml")
+  $currentFile = $(Join-Path -Path $Path -ChildPath "dots.y*ml")
 
   if(!(Test-Path $currentFile)) {
     Write-Error "Did Not find dots.yaml"
@@ -83,7 +83,7 @@ function dotfiler() {
     $currentDirectory = Join-Path -Path $Path -ChildPath $_.Name
     $currentName = $_.Name
     $rawDot = ""
-    $currentFile = $(Join-Path -Path $currentDirectory -ChildPath "dot.yaml")
+    $currentFile = $(Resolve-Path $(Join-Path -Path $currentDirectory -ChildPath "dot.y*ml"))
 
     if(!(Test-Path $currentFile)) {
       Return
