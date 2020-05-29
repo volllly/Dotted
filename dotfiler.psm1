@@ -199,8 +199,14 @@ function Merge($object, $assign) {
 
 function ResolveOs($dot, $os) {
   $dotOs = $false
-  if($dot.ContainsKey("windows") -or $dot.ContainsKey("linux") -or $dot.ContainsKey("darwin") -or $dot.ContainsKey("global")) {
-    if($dot.ContainsKey($os) -or $dot.ContainsKey("global")) {
+  $keys = @{
+    "windows" = $dot.Keys | Where-Object { $_ -match '[a-z|]*windows[a-z|]*' };
+    "linux" = $dot.Keys | Where-Object { $_ -match '[a-z|]*linux[a-z|]*' };
+    "darwin" = $dot.Keys | Where-Object { $_ -match '[a-z|]*darwin[a-z|]*' };
+  }
+
+  if($keys["windows"] -or $keys["linux"] -or $keys["darwin"] -or $dot.ContainsKey("global")) {
+    if($keys[$os] -or $dot.ContainsKey("global")) {
       
       if($dot.ContainsKey("global")) {
         $dotOs = $dot["global"]
@@ -208,8 +214,8 @@ function ResolveOs($dot, $os) {
         $dotOs = @{ }
       }
       
-      if($dot.ContainsKey($os)) {
-        $dotOs = Merge $dotOs $dot[$os]
+      foreach($key in $keys[$os]) {
+        $dotOs = Merge $dotOs $dot[$key]
       }
     }
   } else {
