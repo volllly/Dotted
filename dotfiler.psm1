@@ -27,8 +27,6 @@ function dotfiler() {
   Import-Module powershell-yaml
   Import-Module PsTokens
 
-  Write-Host $Dotfiles
-
   $config = @{ }
   $configPath = "~/.config/dotfiler/config.y*ml"
   if(Test-Path $configPath) {
