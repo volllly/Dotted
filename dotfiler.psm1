@@ -180,7 +180,11 @@ function dotfiler() {
 function Merge($object, $assign) {
   $new = @{ }
   foreach ($key in $object.Keys) {
+    if($object[$key].Clone) {
     $new[$key] = $object[$key].Clone()
+    } else {
+      $new[$key] = $object[$key]
+    }
   }
   foreach ($key in $assign.Keys) {
     if($assign[$key].GetType().Name -eq "Hashtable") {
