@@ -60,6 +60,12 @@ function dotfiler() {
     $os = "windows";
   }
 
+  
+  if($Pull -and ($Command -ne "Sync")) {
+    Invoke-Expression "git -C $(Resolve-Path $Path) pull"
+    Write-Host ""
+  }
+
   $dots = @{ }
   $dotsDefault = @{ }
 
@@ -126,13 +132,6 @@ function dotfiler() {
     }
   }
 
-
-  if($Pull -and ($Command -ne "Sync")) {
-    Write-Host "Pulling from git remote"
-    Invoke-Expression "git -C $(Resolve-Path $path) pull"
-    Write-Host ""
-  }
-
   switch($Command) {
     "Sync" {
       Syncs $Dotfiles $Path
@@ -181,7 +180,7 @@ function Merge($object, $assign) {
   $new = @{ }
   foreach ($key in $object.Keys) {
     if($object[$key].Clone) {
-    $new[$key] = $object[$key].Clone()
+      $new[$key] = $object[$key].Clone()
     } else {
       $new[$key] = $object[$key]
     }
