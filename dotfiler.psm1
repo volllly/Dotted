@@ -1,46 +1,81 @@
+<#
+.Synopsis
+Cross platform dotfile managing and dev environment bootstrapping tool.
+
+.Description
+Manages dotfiles based on a git repo.
+Allows for automatic linking of dotfiles fro the repo to the correct paths.
+Allows for automatic installation and updating of the corresponding applications.
+
+.Example
+  # Link all dots.
+  dotfiler link
+
+.Example
+  # Link some dots and pull dotfiles.
+  dotfiler link -pull git neovim
+
+.Example
+  # Install some dots.
+  dotfiler install vscode nodejs
+
+.Example
+  # Update all dots but do not link.
+  dotfiler update -no-link
+
+.Example
+  # Sync all dots with git repo.
+  dotfiler sync
+#>
 function dotfiler() {
   [CmdletBinding()]
   param(
-    [Parameter(ValueFromPipelineByPropertyName = $true, Position = 0, Mandatory = $true)]
-    [ValidateSet("Install", "Update", "Link", "Sync")]
-    $Command,
+    [Parameter(Position = 0, Mandatory = $true)]
+    [ValidateSet("install", "update", "link", "sync")]
+    # Subcommand to execute.
+    [String]$Command,
+    
+    [Parameter(ValueFromPipeline = $true, ValueFromRemainingArguments = $true)]
+    # Execute for these dots.
+    [String[]]$Dots = "*",
 
-    [Switch]$NoUpdate = $false,
-
-    [Switch]$NoLink = $false,
-
-    [Switch]$NoInstall = $false,
-
+    [Alias("p")]
+    # Pull dotfiles from repo.
     [Switch]$Pull = $false,
 
-    [Parameter(ValueFromPipelineByPropertyName = $true)]
-    $Path = $false,
+    [Alias("no-link", "nl")]
+    # Do not link dots.
+    [Switch]$NoLink = $false,
 
-    [Parameter(ValueFromPipelineByPropertyName = $true)]
-    [ValidateSet("SymbolicLink", "HardLink")]
-    $LinkType = "HardLink",
+    # Specify dotfiles repo path. Read from config otherwise.
+    [String]$DotfilesPath = $null,
     
-    [Parameter(Mandatory = $true, ValueFromRemainingArguments = $true)]
-    [String[]] $Dotfiles
+    # Specify config file path. Use default path "~/.config/dotfiler/config.yaml" otherwise. Creates default config if none found.
+    [String]$ConfigPath = "~/.config/dotfiler/config.y*ml",
+    
+    [ValidateSet("SymbolicLink", "HardLink")]
+    [Alias("l")]
+    # Specify wich linktype to use. Default is Hardlink.
+    [String]$LinkType = "HardLink"
   )
 
   Import-Module powershell-yaml
-  Import-Module PsTokens
 
   $config = @{ }
-  $configPath = "~/.config/dotfiler/config.y*ml"
-  if(Test-Path $configPath) {
+  if(Test-Path $ConfigPath) {
     $rawConfig = ""
-    foreach ($line in Get-Content $(Resolve-Path $configPath)) { $rawConfig += "`n" + $line }
+    foreach ($line in Get-Content $(Resolve-Path $ConfigPath)) { $rawConfig += "`n" + $line }
     $config = ConvertFrom-Yaml $rawConfig
-  } 
+  } else {
+    $config = @{
+      "path" = "~/.dotfiles"
+    };
 
-  if(!$Path) {
-    if($config["path"]) {
-      $Path = $config["path"]
-    } else {
-      $Path = "~/.dotfiles"
-    }
+    ConvertTo-Yaml -Data $config -OutFile $ConfigPath
+  }
+
+  if(!$DotfilesPath) {
+    $DotfilesPath = $config["path"]
   }
 
   $os = $false
@@ -62,15 +97,15 @@ function dotfiler() {
 
   
   if($Pull -and ($Command -ne "Sync")) {
-    Invoke-Expression "git -C $(Resolve-Path $Path) pull"
+    Invoke-Expression "git -C $(Resolve-Path $DotfilesPath) pull"
     Write-Host ""
   }
 
-  $dots = @{ }
+  $dotsData = @{ }
   $dotsDefault = @{ }
 
   $rawDot = ""
-  $currentFile = $(Join-Path -Path $Path -ChildPath "dots.y*ml")
+  $currentFile = $(Join-Path -Path $DotfilesPath -ChildPath "dots.y*ml")
 
   if(!(Test-Path $currentFile)) {
     Write-Error "Did Not find dots.yaml"
@@ -85,8 +120,8 @@ function dotfiler() {
 
   $dotsDefault = Enlarge $dotsDefault
 
-  Get-ChildItem $Path -Directory | ForEach-Object {
-    $currentDirectory = Join-Path -Path $Path -ChildPath $_.Name
+  Get-ChildItem $DotfilesPath -Directory | ForEach-Object {
+    $currentDirectory = Join-Path -Path $DotfilesPath -ChildPath $_.Name
     $currentName = $_.Name
     $rawDot = ""
     $currentFile = $(Resolve-Path $(Join-Path -Path $currentDirectory -ChildPath "dot.y*ml"))
@@ -98,35 +133,35 @@ function dotfiler() {
     foreach ($line in Get-Content $currentFile) { $rawDot += "`n" + $line }
 
 
-    $dots[$currentName] = ConvertFrom-Yaml $rawDot
+    $dotsData[$currentName] = ConvertFrom-Yaml $rawDot
 
-    if(!($dots[$currentName])) {
-      $dots[$currentName] = @{ }
+    if(!($dotsData[$currentName])) {
+      $dotsData[$currentName] = @{ }
     }
 
-    $dots[$currentName] = Enlarge $dots[$currentName]
+    $dotsData[$currentName] = Enlarge $dotsData[$currentName]
     
-    $dots[$currentName] = ResolveOs $dots[$currentName] $os
+    $dotsData[$currentName] = ResolveOs $dotsData[$currentName] $os
 
-    if($null -eq $dots[$currentName]) { $dots[$currentName] = @{ } }
+    if($null -eq $dotsData[$currentName]) { $dotsData[$currentName] = @{ } }
 
-    if($dots[$currentName]) {
-      $dots[$currentName] = Merge $dotsDefault $dots[$currentName].Clone()
+    if($dotsData[$currentName]) {
+      $dotsData[$currentName] = Merge $dotsDefault $dotsData[$currentName].Clone()
     }
 
-    if(!($dots[$currentName])) {
-      $dots.Remove($currentName)
+    if(!($dotsData[$currentName])) {
+      $dotsData.Remove($currentName)
       return
     }
 
-    if($dots[$currentName]["installs"]) {
-      $dots[$currentName]["installs"]["cmd"] = $dots[$currentName]["installs"]["cmd"] | Merge-Tokens -Tokens @{
+    if($dotsData[$currentName]["installs"]) {
+      $dotsData[$currentName]["installs"]["cmd"] = $dotsData[$currentName]["installs"]["cmd"] | Merge-Tokens -Tokens @{
         name = $currentName
       }
     }
 
-    if($dots[$currentName]["updates"]) {
-      $dots[$currentName]["updates"]["cmd"] = $dots[$currentName]["updates"]["cmd"] | Merge-Tokens -Tokens @{
+    if($dotsData[$currentName]["updates"]) {
+      $dotsData[$currentName]["updates"]["cmd"] = $dotsData[$currentName]["updates"]["cmd"] | Merge-Tokens -Tokens @{
         name = $currentName
       }
     }
@@ -134,40 +169,34 @@ function dotfiler() {
 
   switch($Command) {
     "Sync" {
-      Syncs $Dotfiles $Path
+      Syncs $Dots $DotfilesPath
     }
     default {
-      $dots.Keys | ForEach-Object {
+      $dotsData.Keys | ForEach-Object {
 
         $name = $_
-        if($Dotfiles.Contains("*") -Or $Dotfiles.Contains($name)) {
+        if($Dots.Contains("*") -Or $Dots.Contains($name)) {
           switch($Command) {
-            "Install" {
-              if($dots[$name]["links"] -And !($NoLink)) {
-                Links $dots $name
+            "install" {
+              if($dotsData[$name]["links"] -And !($NoLink)) {
+                Links $dotsData $name
               }
-              if($dots[$name]["installs"] -And !($NoInstall)) {
-                Installs $dots $name
-              }
-            }
-            "Update" {
-              if($dots[$name]["links"] -And !($NoLink)) {
-                Links $dots $name
-              }
-              if($dots[$name]["updates"] -And !($NoUpdate)) {
-                Updates $dots $name
+              if($dotsData[$name]["installs"]) {
+                Installs $dotsData $name
               }
             }
-            "Link" {
-              if($dots[$name]["links"] -And !($NoLinks)) {
-                Links $dots $name
+            "update" {
+              if($dotsData[$name]["links"] -And !($NoLink)) {
+                Links $dotsData $name
+              }
+              if($dotsData[$name]["updates"]) {
+                Updates $dotsData $name
               }
             }
-            "help" {
-              help
-            }
-            default {
-              help
+            "link" {
+              if($dotsData[$name]["links"] -And !($NoLinks)) {
+                Links $dotsData $name
+              }
             }
           }
         }
@@ -204,8 +233,8 @@ function ResolveOs($dot, $os) {
   $dotOs = $false
   $keys = @{
     "windows" = $dot.Keys | Where-Object { $_ -match '[a-z|]*windows[a-z|]*' };
-    "linux" = $dot.Keys | Where-Object { $_ -match '[a-z|]*linux[a-z|]*' };
-    "darwin" = $dot.Keys | Where-Object { $_ -match '[a-z|]*darwin[a-z|]*' };
+    "linux"   = $dot.Keys | Where-Object { $_ -match '[a-z|]*linux[a-z|]*' };
+    "darwin"  = $dot.Keys | Where-Object { $_ -match '[a-z|]*darwin[a-z|]*' };
   }
 
   if($keys["windows"] -or $keys["linux"] -or $keys["darwin"] -or $dot.ContainsKey("global")) {
@@ -233,7 +262,7 @@ function Enlarge($dot) {
     if($dot["installs"]) {
       if($dot["installs"].GetType().Name -Eq "String") {
         $dot["installs"] = @{
-          "cmd" = $dot["installs"]
+          "cmd"     = $dot["installs"]
           "depends" = @()
         }
       }
@@ -256,7 +285,7 @@ function Enlarge($dot) {
     if($dot["updates"]) {
       if($dot["updates"].GetType().Name -Eq "String") {
         $dot["updates"] = @{
-          "cmd" = $dot["updates"].Clone()
+          "cmd"     = $dot["updates"].Clone()
           "depends" = @()
         }
       }
@@ -292,66 +321,102 @@ function Enlarge($dot) {
   return $dot
 }
 
-Function PackageAction($dots, $name, $action) {
-  $packageaction = $dots[$name]["$action"]
-  $depends = $dots[$name]["depends"]
+Function PackageAction($dotsData, $name, $action) {
+  $packageaction = $dotsData[$name][$action]
+  $depends = $dotsData[$name]["depends"]
 
   if(($packageaction["packageactiondone"]) -Or ($packageaction["error"])) {
     Return
   }
 
-  if(($packageaction["depended"] -Gt 1) -Or ($dots[$name]["depended"] -Gt 1)) {
+  if(($packageaction["depended"] -Gt 1) -Or ($dotsData[$name]["depended"] -Gt 1)) {
     Write-Host "detected circular dependency for $name" -ForegroundColor Red
     Return
   }
   if($packageaction["depends"]) {
     $packageaction["depends"] | ForEach-Object {
-      $dots[$_]["$action"]["depended"] += 1
-      PackageAction $dots $_ $action
+      if(!$dotsData[$_]) {
+        Write-Error "Could not find dependency `"$_`" for `"$name`""
+        exit
+      }
+      if(!$dotsData[$_][$action]) {
+        Write-Error "Could not find `"$action`" for dependency `"$_`" for `"$name`""
+        exit
+      }
+      $dotsData[$_][$action]["depended"] += 1
+      PackageAction $dotsData $_ $action
     }
   }
 
   switch ($action) {
-    "updates" { 
+    "updates" {
       Write-Host "updating $name"
-     }
-     "installs" { 
-       Write-Host "installing $name"
+    }
+    "installs" { 
+      Write-Host "installing $name"
     }
   }
 
   Invoke-Expression $packageaction["cmd"]
 
-  $dots[$name]["$action"]["packageactiondone"] = $true
+  $dotsData[$name][$action]["packageactiondone"] = $true
 
   if($depends) {
     $depends | ForEach-Object {
-      $dots[$_]["depended"] += 1
-      PackageAction $dots $_ $action
+      $dotsData[$_]["depended"] += 1
+      PackageAction $dotsData $_ $action
     }
   }
 
   Write-Host ""
 }
 
-Function Updates($dots, $name) {
-  PackageAction $dots $name "updates"
+function Merge-Tokens() {
+  [CmdletBinding()]
+  param (
+    [Parameter(Mandatory = $True, ValueFromPipeline = $true)]
+    [AllowEmptyString()]
+    [String] $template,
+
+    [Parameter(Mandatory = $true)]
+    [HashTable] $tokens
+  ) 
+  try {
+
+    [regex]::Replace( $template, '{{ *(?<tokenName>[\w\.]+) *}}', {
+        param($match)
+        $value = Invoke-Expression "`$tokens.$($match.Groups['tokenName'].Value)"
+
+        if($value) {
+          return $tokenValue
+        } else {
+          return $match
+        }
+      })
+
+  } catch {
+    Write-Error $_
+  }
+} 
+
+Function Updates($dotsData, $name) {
+  PackageAction $dotsData $name "updates"
 }
 
-Function Installs($dots, $name) {
-  PackageAction $dots $name "installs"
+Function Installs($dotsData, $name) {
+  PackageAction $dotsData $name "installs"
 }
 
-function Syncs($dotfiles, $path) {
+function Syncs($dotsData, $path) {
   $changes = @{ }
 
-  if($Dotfiles.Contains("*") -Or $Dotfiles.Contains("dots.yaml")) {
+  if($dotsData.Contains("*") -Or $dotsData.Contains("dots.yaml")) {
     Invoke-Expression "git -C $(Resolve-Path $path) add dots.yaml -v" | ForEach-Object {
       $changes[$_.Split(" ")[1].Trim("'").Split("/")[0]] = $true
     }
   }
 
-  $dotfiles.Split(" ") | ForEach-Object {
+  $dotsData.Split(" ") | ForEach-Object {
     Invoke-Expression "git -C $(Resolve-Path $path) add `"$_/*`" -v" | ForEach-Object {
       $changes[$_.Split(" ")[1].Trim("'").Split("/")[0]] = $true
     }
@@ -369,22 +434,18 @@ function Syncs($dotfiles, $path) {
   Invoke-Expression "git -C $(Resolve-Path $path) push"
 }
 
-Function Links($dots, $name) {
+Function Links($dotsData, $name) {
   Write-Host "linking $name"
-  $links = $dots[$name]["links"]
+  $links = $dotsData[$name]["links"]
   $links.Keys | ForEach-Object {
     $Key = $_
     $links[$Key] | ForEach-Object {
       Write-Host "  $Key -> $_"
 
-      New-Item -ItemType $LinkType -Force -Path $_ -Target $(Resolve-Path $(Join-Path -Path $Path -ChildPath $(Join-Path -Path $name -ChildPath $Key))) | Out-Null
+      New-Item -ItemType $LinkType -Force -Path $_ -Target $(Resolve-Path $(Join-Path -Path $DotfilesPath -ChildPath $(Join-Path -Path $name -ChildPath $Key))) | Out-Null
     }
   }
   Write-Host ""
-}
-
-Function Help() {
-  Write-Error "not implemented"
 }
 
 Export-ModuleMember -Function dotfiler
