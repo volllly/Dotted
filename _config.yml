@@ -1,3 +1,5 @@
 theme: jekyll-theme-cayman
 title: dotfiler
 description: Cross platform dotfile managing and dev environment bootstrapping tool
+github:
+  another_url: docs/reference.md
