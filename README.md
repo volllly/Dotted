@@ -233,7 +233,7 @@ You can also combine multiple OSs per key separating them with a `|`.
 
 ## Example Repository
 
-You can see all of this functionality used in my [own dotfiles repository](https://github.com/volllly/dotfiles).
+You can see all of this functionality used in my [own dotfiles repository](https://github.com/volllly/.dotfiles).
 
 # Contribute
 
