@@ -68,7 +68,7 @@ The `dot.yaml` file consists of four optional keys:
 
 ### `links`
 
-The `links` section specifies where the dotfiles should be linked.
+The `links` section specifies where the dotfiles should be linked. **Command `Link-Dots`**
 
 It consists of multiple `key: value` pairs where the `key` is the filename of the `dotfile` and the `value` is the link path.
 
@@ -84,7 +84,7 @@ It consists of multiple `key: value` pairs where the `key` is the filename of th
 
 ### `installs`
 
-The `installs` section contains the install command and optional install dependencies.
+The `installs` section contains the install command and optional install dependencies. **Command `Install-Dots`**
 
 It can either be a `string` containing the install command or have two sub keys.
 
@@ -111,7 +111,7 @@ It can either be a `string` containing the install command or have two sub keys.
 
 ### `updates`
 
-The `updates` section contains the update command and optional update dependencies.
+The `updates` section contains the update command and optional update dependencies. **Command `Update-Dots`**
 
 It works exactly like the `installs` key described above.
 
