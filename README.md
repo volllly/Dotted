@@ -26,16 +26,12 @@ Install-Module Dotfiler
 
 ## Run
 
-```pwsh
-dotfiler -?
-```
+Run `Get-Command -Module dotfiler` to see all commands dotfiler has.
 
-If PowerShell does not recognize the dotfiler command you need to run `Import-Module dotfiler` (consider adding this to your `Profile.ps1`).
+You can then use `Get-Help -Full <command>` to view the fill command help.
 
-> ***Note:** You can get the full help with the command:
-> ```pwsh
-> Get-Help -Full dotfiler
-> ```
+
+> ***Note:** You may need to run `Import-Module dotfiler` (consider adding this to your `Profile.ps1`).*
 
 # Configuration
 
@@ -78,7 +74,7 @@ It consists of multiple `key: value` pairs where the `key` is the filename of th
 
 > ***Example:***
 >
-> `vscode/dot.yaml`
+> *`vscode/dot.yaml`*
 > ```yaml
 > ...
 > links:
@@ -99,14 +95,14 @@ It can either be a `string` containing the install command or have two sub keys.
 
 > ***Examples:***
 >
-> `nodejs/dot.yaml`
+> *`nodejs/dot.yaml`*
 > ```yaml
 > ...
 > installs:
 >   cmd: scoop install nodejs
 >   depends: [scoop]
 > ```
-> `scoop/dot.yaml`
+> *`scoop/dot.yaml`*
 >
 > ```yaml
 > ...
@@ -121,7 +117,7 @@ It works exactly like the `installs` key described above.
 
 > ***Example:***
 >
-> `nodejs/dot.yaml`
+> *`nodejs/dot.yaml`*
 > ```yaml
 > ...
 > updates:
@@ -137,7 +133,7 @@ These dependencies will also be installed/updated when the application is instal
 
 > ***Example:***
 >
-> `zsh/dot.yaml`
+> *`zsh/dot.yaml`*
 > ```yaml
 > ...
 > depends: [starship]
@@ -153,7 +149,7 @@ You can use template strings (`{{ name }}`) to substitute the name of the applic
 
 > ***Example:***
 >
-> `dots.yaml`
+> *`dots.yaml`*
 > ```yaml
 > installs:
 >   cmd: scoop install {{ name }}
@@ -176,7 +172,7 @@ To specify OS Specific behavior you need to add top level keys named `linux`, `w
 
 > ***Examples:***
 >
-> `dots.yaml`
+> *`dots.yaml`*
 > ```yaml
 > windows:
 >   installs:
@@ -198,7 +194,7 @@ To specify OS Specific behavior you need to add top level keys named `linux`, `w
 >     depends:
 >       - brew
 > ```
-> `neovim/dot.yaml`
+> *`neovim/dot.yaml`*
 > ```yaml
 > windows:
 >   links:
@@ -215,7 +211,7 @@ You can also combine multiple OSs per key separating them with a `|`.
 
 > ***Example:***
 >
-> `dots.yaml`
+> *`dots.yaml`*
 > ```yaml
 > windows:
 >   installs:

@@ -21,8 +21,9 @@ Description = 'Cross platform dotfile managing and dev environment bootstrapping
 # Modules that must be imported into the global environment prior to importing this module
 RequiredModules = @('powershell-yaml')
 
-# Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
-FunctionsToExport = @('dotfiler')
+# Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
+CmdletsToExport = @('Link-Dots', 'Sync-Dots', 'Install-Dots', 'Update-Dots')
+AliasesToExport = @('Link-Dot', 'Mount-Dots', 'Mount-Dot', 'Sync-Dot', 'Install-Dot', 'Update-Dot')
 
 # Private data to pass to the module specified in RootModule/ModuleToProcess. This may also contain a PSData hashtable with additional module metadata used by PowerShell.
 PrivateData = @{
