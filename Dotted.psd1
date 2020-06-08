@@ -1,10 +1,10 @@
 #
-# Module manifest for module 'dotfiler'
+# Module manifest for module 'Dotted'
 #
 
 @{
 
-RootModule = 'dotfiler.psm1'
+RootModule = 'Dotted.psm1'
 
 # Version number of this module.
 ModuleVersion = '0.0.1'
@@ -34,10 +34,10 @@ PrivateData = @{
     Tags = 'dotfile', 'dotfiles'
 
     # A URL to the license for this module.
-    LicenseUri = 'https://github.com/volllly/dotfiler/blob/master/LICENSE'
+    LicenseUri = 'https://github.com/volllly/Dotted/blob/master/LICENSE'
 
     # A URL to the main website for this project.
-    ProjectUri = 'https://volllly.github.io/dotfiler/'
+    ProjectUri = 'https://volllly.github.io/Dotted/'
 
     # External dependent modules of this module
     ExternalModuleDependencies = 'powershell-yaml'
@@ -47,7 +47,7 @@ PrivateData = @{
 } # End of PrivateData hashtable
 
 # HelpInfo URI of this module
-HelpInfoURI = 'https://volllly.github.io/dotfiler/'
+HelpInfoURI = 'https://volllly.github.io/Dotted/'
 
 }
 

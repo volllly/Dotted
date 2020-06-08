@@ -28,8 +28,8 @@ Function Link-Dots() {
     # Specify dotfiles repo path. Read from config otherwise.
     [String]$DotfilesPath = $null,
     
-    # Specify config file path. Use default path "~/.config/dotfiler/config.yaml" otherwise. Creates default config if none found.
-    [String]$ConfigPath = "~/.config/dotfiler/config.y*ml",
+    # Specify config file path. Use default path "~/.config/dotted/config.yaml" otherwise. Creates default config if none found.
+    [String]$ConfigPath = "~/.config/dotted/config.y*ml",
     
     [ValidateSet("SymbolicLink", "HardLink")]
     [Alias("l")]
