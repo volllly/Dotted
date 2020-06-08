@@ -35,6 +35,14 @@ You can then use `Get-Help -Full <command>` to view the fill command help.
 > ***Note:** You may need to run `Import-Module Dotted` (consider adding this to your `Profile.ps1`).*
 > ***Note:** You may install the [powershell-yaml](https://www.powershellgallery.com/packages/powershell-yaml/) module `Install-Module powershell-yaml`.*
 
+## Getting Started
+
+If you already have a `dotfiles` repo you can clone it with the `Clone-Dots` command.
+
+To bootstrap your dev environment use `Install-Dots`.
+
+To link your `dotfiles` use `Link-Dots`.
+
 # Configuration
 
 Dotted uses a git repo containing the`dotfiles` and [`yaml`](https://yaml.org/) files for configuration.
