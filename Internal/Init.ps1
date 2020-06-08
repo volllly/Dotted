@@ -11,7 +11,7 @@ function Init($Dots, $Pull, $DotfilesPath, $ConfigPath) {
       "path" = "~/.dotfiles"
     };
 
-    ConvertTo-Yaml -Data $config -OutFile $ConfigPath
+    New-Item -Path $($ConfigPath.replace("y*ml", "yaml")) -ItemType File -Value $(ConvertTo-Yaml -Data $config) -Force
   }
 
   if(!$DotfilesPath) {
@@ -43,73 +43,74 @@ function Init($Dots, $Pull, $DotfilesPath, $ConfigPath) {
 
   $dotsData = @{ }
   $dotsDefault = @{ }
-
-  $rawDot = ""
-  $currentFile = $(Join-Path -Path $DotfilesPath -ChildPath "dots.y*ml")
-
-  if(!(Test-Path $currentFile)) {
-    Write-Error "Did Not find dots.yaml"
-    Return
-  }
-
-  foreach ($line in Get-Content $currentFile) { $rawDot += "`n" + $line }
-  $dotsDefault = ConvertFrom-Yaml $rawDot
-
   
-  $dotsDefault = ResolveOs $dotsDefault $os
-
-  $dotsDefault = Enlarge $dotsDefault
-
-  Get-ChildItem $DotfilesPath -Directory | ForEach-Object {
-    $currentDirectory = Join-Path -Path $DotfilesPath -ChildPath $_.Name
-    $currentName = $_.Name
+  if($Dots) {
     $rawDot = ""
-    $currentFile = $(Resolve-Path $(Join-Path -Path $currentDirectory -ChildPath "dot.y*ml"))
+    $currentFile = $(Join-Path -Path $DotfilesPath -ChildPath "dots.y*ml")
 
     if(!(Test-Path $currentFile)) {
+      Write-Error "Did Not find dots.yaml"
       Return
     }
-    
+
     foreach ($line in Get-Content $currentFile) { $rawDot += "`n" + $line }
+    $dotsDefault = ConvertFrom-Yaml $rawDot
 
+  
+    $dotsDefault = ResolveOs $dotsDefault $os
 
-    $dotsData[$currentName] = ConvertFrom-Yaml $rawDot
+    $dotsDefault = Enlarge $dotsDefault
 
-    if(!($dotsData[$currentName])) {
-      $dotsData[$currentName] = @{ }
-    }
+    Get-ChildItem $DotfilesPath -Directory | ForEach-Object {
+      $currentDirectory = Join-Path -Path $DotfilesPath -ChildPath $_.Name
+      $currentName = $_.Name
+      $rawDot = ""
+      $currentFile = $(Resolve-Path $(Join-Path -Path $currentDirectory -ChildPath "dot.y*ml"))
 
-    $dotsData[$currentName] = Enlarge $dotsData[$currentName]
-    
-    $dotsData[$currentName] = ResolveOs $dotsData[$currentName] $os
-
-    if($null -eq $dotsData[$currentName]) { $dotsData[$currentName] = @{ } }
-
-    if($dotsData[$currentName]) {
-      $dotsData[$currentName] = Merge $dotsDefault $dotsData[$currentName].Clone()
-    }
-
-    if(!($dotsData[$currentName])) {
-      $dotsData.Remove($currentName)
-      return
-    }
-
-    if($dotsData[$currentName]["installs"]) {
-      $dotsData[$currentName]["installs"]["cmd"] = $dotsData[$currentName]["installs"]["cmd"] | Merge-Tokens -Tokens @{
-        name = $currentName
+      if(!(Test-Path $currentFile)) {
+        Return
       }
-    }
+    
+      foreach ($line in Get-Content $currentFile) { $rawDot += "`n" + $line }
 
-    if($dotsData[$currentName]["updates"]) {
-      $dotsData[$currentName]["updates"]["cmd"] = $dotsData[$currentName]["updates"]["cmd"] | Merge-Tokens -Tokens @{
-        name = $currentName
+
+      $dotsData[$currentName] = ConvertFrom-Yaml $rawDot
+
+      if(!($dotsData[$currentName])) {
+        $dotsData[$currentName] = @{ }
+      }
+
+      $dotsData[$currentName] = Enlarge $dotsData[$currentName]
+    
+      $dotsData[$currentName] = ResolveOs $dotsData[$currentName] $os
+
+      if($null -eq $dotsData[$currentName]) { $dotsData[$currentName] = @{ } }
+
+      if($dotsData[$currentName]) {
+        $dotsData[$currentName] = Merge $dotsDefault $dotsData[$currentName].Clone()
+      }
+
+      if(!($dotsData[$currentName])) {
+        $dotsData.Remove($currentName)
+        return
+      }
+
+      if($dotsData[$currentName]["installs"]) {
+        $dotsData[$currentName]["installs"]["cmd"] = $dotsData[$currentName]["installs"]["cmd"] | Merge-Tokens -Tokens @{
+          name = $currentName
+        }
+      }
+
+      if($dotsData[$currentName]["updates"]) {
+        $dotsData[$currentName]["updates"]["cmd"] = $dotsData[$currentName]["updates"]["cmd"] | Merge-Tokens -Tokens @{
+          name = $currentName
+        }
       }
     }
   }
-
   return @{
-    "config" = $config;
-    "dotsData" = $dotsData;
+    "config"       = $config;
+    "dotsData"     = $dotsData;
     "DotfilesPath" = $DotfilesPath
   }
 }

@@ -17,7 +17,7 @@ Allows for automatic installation of the corresponding applications.
 Function Update-Dots() {
   [CmdletBinding()]
   param(
-    [Parameter(ValueFromPipeline = $true)]
+    [Parameter(ValueFromPipeline = $true, Position = 0)]
     # Execute for these dots.
     [String[]]$Dots = "*",
 
