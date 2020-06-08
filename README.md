@@ -23,6 +23,7 @@ Install-Module Dotted
 ## Requirements
 
 * [PowerShell](https://microsoft.com/PowerShell) >= 5.x (PowerShell Core is supported)
+* [powershell-yaml](https://www.powershellgallery.com/packages/powershell-yaml/)
 
 ## Run
 
@@ -32,6 +33,7 @@ You can then use `Get-Help -Full <command>` to view the fill command help.
 
 
 > ***Note:** You may need to run `Import-Module Dotted` (consider adding this to your `Profile.ps1`).*
+> ***Note:** You may install the [powershell-yaml](https://www.powershellgallery.com/packages/powershell-yaml/) module `Install-Module powershell-yaml`.*
 
 # Configuration
 
