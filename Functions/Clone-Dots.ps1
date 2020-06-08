@@ -31,7 +31,8 @@ Function Clone-Dots() {
   $init = Init $Dots $Pull $DotfilesPath $ConfigPath
   $DotfilesPath = $init.DotfilesPath
 
-  Invoke-Expression "git clone `"$RepoUrl`" `"$DotfilesPath`""
+  New-Item -ItemType Directory -Path $DotfilesPath
+  Invoke-Expression "git clone `"$RepoUrl`" `"$(Resolve-Path $DotfilesPath)`""
 }
 
 New-Alias -Name "Connect-Dots" Clone-Dots
