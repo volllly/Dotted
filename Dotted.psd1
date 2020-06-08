@@ -31,7 +31,7 @@ PrivateData = @{
   PSData = @{
 
     # Tags applied to this module. These help with module discovery in online galleries.
-    Tags = 'dotfile', 'dotfiles'
+    Tags = 'dotfile', 'dotfiles', 'PSEdition_Desktop', 'PSEdition_Core', 'Windows', 'Linux', 'MacOS'
 
     # A URL to the license for this module.
     LicenseUri = 'https://github.com/volllly/Dotted/blob/master/LICENSE'
