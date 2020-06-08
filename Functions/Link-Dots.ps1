@@ -17,7 +17,7 @@ Allows for automatic linking of dotfiles from the repo to the correct paths.
 Function Link-Dots() {
   [CmdletBinding()]
   param(
-    [Parameter(ValueFromPipeline = $true)]
+    [Parameter(ValueFromPipeline = $true, Position = 0)]
     # Execute for these dots.
     [String[]]$Dots = "*",
 
