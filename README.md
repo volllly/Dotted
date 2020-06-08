@@ -1,4 +1,6 @@
 [![PowerShell Gallery Version](https://img.shields.io/powershellgallery/v/Dotted)](https://www.powershellgallery.com/packages/Dotted)
+[![PowerShell Gallery](https://img.shields.io/powershellgallery/p/Dotted)](https://www.powershellgallery.com/packages/Dotted)
+
 # Introduction
 
 Dotted has three main functionalities. 
