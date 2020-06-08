@@ -1,6 +1,6 @@
 # Introduction
 
-Dotfiler has three main functionalities. 
+Dotted has three main functionalities. 
 
 1. Linking dotfiles from a common repository to your system
 2. Installing the applications you need to start working on an new/empty machine
@@ -17,7 +17,7 @@ I started using [scoop](https://github.com/lukesampson/scoop/) as a package mana
 Install the PowerShell module: 
 
 ```pwsh
-Install-Module Dotfiler
+Install-Module Dotted
 ```
 
 ## Requirements
@@ -26,18 +26,18 @@ Install-Module Dotfiler
 
 ## Run
 
-Run `Get-Command -Module dotfiler` to see all commands dotfiler has.
+Run `Get-Command -Module Dotted` to see all commands Dotted has.
 
 You can then use `Get-Help -Full <command>` to view the fill command help.
 
 
-> ***Note:** You may need to run `Import-Module dotfiler` (consider adding this to your `Profile.ps1`).*
+> ***Note:** You may need to run `Import-Module Dotted` (consider adding this to your `Profile.ps1`).*
 
 # Configuration
 
-Dotfiler uses a git repo containing the`dotfiles` and [`yaml`](https://yaml.org/) files for configuration.
+Dotted uses a git repo containing the`dotfiles` and [`yaml`](https://yaml.org/) files for configuration.
 
-This git repo should be located at `~/.dotfiler`. Different paths can be specified using the `-DotfilesPath` cli flag or in the Dotfiler config file `~/.config/dotfiler/config.yaml` like this:
+This git repo should be located at `~/.dotfiles`. Different paths can be specified using the `-DotfilesPath` cli flag or in the Dotted config file `~/.config/dotted/config.yaml` like this:
 
 ```yaml
 path: ~./dotfiles
@@ -166,7 +166,7 @@ You can use template strings (`{{ name }}`) to substitute the name of the applic
 
 You can specify different behaviors per OS in all configuration files.
 
-Dotfiler can differentiate between Windows, Linux and MacOS.
+Dotted can differentiate between Windows, Linux and MacOS.
 
 To specify OS Specific behavior you need to add top level keys named `linux`, `windows`, `darwin` (for MacOS) and `general` (applied to all OSs).
 

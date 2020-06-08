@@ -1,3 +1,3 @@
-Import-Module ./dotfiler.psm1 -Force
+Import-Module ./Dotted.psm1 -Force
 
 Sync-Dots 

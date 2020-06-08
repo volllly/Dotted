@@ -1,4 +1,4 @@
-Export-ModuleMember -Function dotfiler
+Export-ModuleMember -Function Dotted
 
 $Functions  = @( Get-ChildItem -Path $PSScriptRoot\Functions\*.ps1 -ErrorAction SilentlyContinue )
 $Internal = @( Get-ChildItem -Path $PSScriptRoot\Internal\*.ps1 -ErrorAction SilentlyContinue )
