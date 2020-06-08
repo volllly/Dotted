@@ -7,7 +7,7 @@
 RootModule = 'Dotted.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.1.0'
+ModuleVersion = '0.1.1'
 
 # ID used to uniquely identify this module
 GUID = '15299202-48fa-4b29-a3f7-7e744308f410'
