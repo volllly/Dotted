@@ -46,6 +46,8 @@ To bootstrap your dev environment use `Install-Dots`.
 
 To link your `dotfiles` use `Link-Dots`.
 
+---
+
 # Configuration
 
 Dotted uses a git repo containing the`dotfiles` and [`yaml`](https://yaml.org/) files for configuration.
