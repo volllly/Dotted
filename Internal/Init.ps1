@@ -67,7 +67,7 @@ function Init($Dots, $Pull, $DotfilesPath, $ConfigPath) {
       $rawDot = ""
       $currentFile = $(Resolve-Path $(Join-Path -Path $currentDirectory -ChildPath "dot.y*ml"))
 
-      if(!(Test-Path $currentFile)) {
+      if((!$currentFile) -or (!(Test-Path $currentFile))) {
         Return
       }
     

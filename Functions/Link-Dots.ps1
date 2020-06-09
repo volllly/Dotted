@@ -44,9 +44,9 @@ Function Link-Dots() {
   $dotsData.Keys | ForEach-Object {
     $name = $_
     if($Dots.Contains("*") -Or $Dots.Contains($name)) {
-      Write-Host "linking $name"
       $links = $dotsData[$name]["links"]
       if(!$links) { return; }
+      Write-Host "linking $name"
       $links.Keys | ForEach-Object {
         $Key = $_
         $links[$Key] | ForEach-Object {

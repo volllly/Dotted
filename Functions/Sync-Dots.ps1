@@ -33,6 +33,8 @@ function Sync-Dots() {
 
   $changes = @{ }
 
+  Write-Host "syncing dotfiles"
+  
   if($Dots.Contains("*") -Or $Dots.Contains("dots.yaml")) {
     Invoke-Expression "git -C $(Resolve-Path $DotfilesPath) add dots.yaml -v" | ForEach-Object {
       $changes[$_.Split(" ")[1].Trim("'").Split("/")[0]] = $true

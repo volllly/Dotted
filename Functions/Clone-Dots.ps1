@@ -31,6 +31,7 @@ Function Clone-Dots() {
   $init = Init $Dots $Pull $DotfilesPath $ConfigPath
   $DotfilesPath = $init.DotfilesPath
 
+  Write-Host "cloning dotfiles"
   New-Item -ItemType Directory -Path $DotfilesPath
   Invoke-Expression "git clone `"$RepoUrl`" `"$(Resolve-Path $DotfilesPath)`""
 }
