@@ -52,7 +52,11 @@ Function Link-Dots() {
         $links[$Key] | ForEach-Object {
           Write-Host "  $Key -> $_"
 
-          New-Item -ItemType $LinkType -Force -Path $_ -Target $(Resolve-Path $(Join-Path -Path $DotfilesPath -ChildPath $(Join-Path -Path $name -ChildPath $Key))) | Out-Null
+          if((Test-Path -Path $(Resolve-Path $(Join-Path -Path $DotfilesPath -ChildPath $(Join-Path -Path $name -ChildPath $Key))) -PathType Container) -and ($LinkType -eq "HardLink")) {
+            New-Item -ItemType "Junction" -Force -Path $_ -Target $(Resolve-Path $(Join-Path -Path $DotfilesPath -ChildPath $(Join-Path -Path $name -ChildPath $Key))) | Out-Null
+          } else {
+            New-Item -ItemType $LinkType -Force -Path $_ -Target $(Resolve-Path $(Join-Path -Path $DotfilesPath -ChildPath $(Join-Path -Path $name -ChildPath $Key))) | Out-Null
+          }
         }
       }
       Write-Host ""
