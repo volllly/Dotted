@@ -6,9 +6,9 @@
 > This project is in maintainance mode. If there are any bugs I will do my best to fix them but no new features will be added.
 > 
 > Im currently working on a successor to Dotted called [Rotz](https://github.com/volllly/rotz) which is written in rust. Rotz is compatible with Dotteds dotfile repos but
-> aims to have better error handling and better ux as well as more features in the future.
+> aims to have better error handling and better ux as well as more features.
 > 
-> See the [roadmap](https://github.com/users/volllly/projects/1/views/1) to get the status of Rotzs development. It does not yet have feature parity with Dotted but should be there soon.
+> See the [roadmap](https://github.com/users/volllly/projects/1/views/1) to get the status of Rotzs development.
 
 # Introduction
 
